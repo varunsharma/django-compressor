@@ -1,4 +1,7 @@
 language: python
+cache:
+  directories:
+    - .ci-replay-cache
 before_install:
   - sudo apt-get update
   - sudo apt-get install csstidy libxml2-dev libxslt-dev

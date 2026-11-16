@@ -13,10 +13,17 @@ History is a best-effort JSON cache in ``.ci-replay-cache``. It contains test
 identifiers, bounded risk counts, and CI repository, branch, pull request,
 commit, run, job, lane, and Python context. It does not contain test output.
 The cache is advisory: an absent, unreadable, malformed, oversized, or
-incompatible cache starts a cold run, which still executes the full suite.
-History retention depends on the CI provider preserving or restoring this
-directory; Travis jobs should be treated as cold runs unless an external cache
-is configured. Cache history is not a durable record of test outcomes.
+incompatible cache starts with the broad candidate set, and the runner still
+stops at the first failure. Travis caches this
+directory between normal pushes. Travis restores caches for pull-request
+builds but only stores cache modifications from normal pushes, so new failures
+from a pull-request build are not guaranteed to persist to its next run. A
+cold or stale cache therefore remains possible; this history is not durable.
+PR, base SHA, or run-attempt values may be empty when Travis does not expose
+them to a job. See https://docs.travis-ci.com/user/caching/ for cache scope
+and write rules.
+
+Unresolved test and collection failures keep their originating repository, pull request, head/base refs and SHAs, run ID/attempt, job, tox lane, and Python runtime attached per test ID. That provenance has no 12-run expiry and is removed only after a clean pass; the bounded recent-context list is supplemental. The cache schema change starts once from cold history when older cached data is present.
 
 The runner requires one Django test process and rejects parallel test
 execution. The current Travis matrix runs separate tox environments, so a
