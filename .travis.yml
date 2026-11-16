@@ -9,17 +9,40 @@ install:
   - pip install tox coveralls
 script:
   - tox
-env:
-  - TOXENV=py33-1.6.X
-  - TOXENV=py32-1.6.X
-  - TOXENV=py27-1.6.X
-  - TOXENV=py26-1.6.X
-  - TOXENV=py33-1.5.X
-  - TOXENV=py32-1.5.X
-  - TOXENV=py27-1.5.X
-  - TOXENV=py26-1.5.X
-  - TOXENV=py27-1.4.X
-  - TOXENV=py26-1.4.X
+stages:
+  - name: replay-01
+  - name: replay-02
+  - name: replay-03
+  - name: replay-04
+  - name: replay-05
+  - name: replay-06
+  - name: replay-07
+  - name: replay-08
+  - name: replay-09
+  - name: replay-10
+jobs:
+  include:
+    - stage: replay-01
+      env: TOXENV=py33-1.6.X
+    - stage: replay-02
+      env: TOXENV=py32-1.6.X
+    - stage: replay-03
+      env: TOXENV=py27-1.6.X
+    - stage: replay-04
+      env: TOXENV=py26-1.6.X
+    - stage: replay-05
+      env: TOXENV=py33-1.5.X
+    - stage: replay-06
+      env: TOXENV=py32-1.5.X
+    - stage: replay-07
+      env: TOXENV=py27-1.5.X
+    - stage: replay-08
+      env: TOXENV=py26-1.5.X
+    - stage: replay-09
+      env: TOXENV=py27-1.4.X
+    - stage: replay-10
+      env: TOXENV=py26-1.4.X
+
 notifications:
   irc: "irc.freenode.org#django-compressor"
 after_success: coveralls

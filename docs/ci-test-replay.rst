@@ -6,29 +6,34 @@ Django suite with the previous failed test first, followed by interrupted
 tests, matching test modules and conventionally paired source modules affected
 by changed files, historically risky tests, and the remaining suite. The
 changed-file match is a bounded filename heuristic; it cannot infer arbitrary
-runtime dependencies. The runner stops after the first failure. The existing
-tox matrix, lint command, coverage collection, and test labels remain in place.
+runtime dependencies. The runner stops after the first failure. Every existing
+tox environment remains represented in the Travis job list, and each is
+placed in its own ordered stage so a failed job prevents later environments
+from starting. The Python/Django environment list is unchanged.
 
-History is a best-effort JSON cache in ``.ci-replay-cache``. It contains test
-identifiers, bounded risk counts, and CI repository, branch, pull request,
-commit, run, job, lane, and Python context. It does not contain test output.
-The cache is advisory: an absent, unreadable, malformed, oversized, or
-incompatible cache starts with the broad candidate set, and the runner still
-stops at the first failure. Travis caches this
-directory between normal pushes. Travis restores caches for pull-request
-builds but only stores cache modifications from normal pushes, so new failures
-from a pull-request build are not guaranteed to persist to its next run. A
-cold or stale cache therefore remains possible; this history is not durable.
-PR, base SHA, or run-attempt values may be empty when Travis does not expose
-them to a job. See https://docs.travis-ci.com/user/caching/ for cache scope
-and write rules.
+History is a best-effort JSON cache in ``.ci-replay-cache``. Its stable cache
+key is scoped by repository, branch, pull request, head ref, tox lane, and
+Python runtime. Each unresolved test or collection failure separately retains
+its originating repository, pull request, head/base refs and SHAs, commit, run
+ID/attempt, job, tox lane, and Python runtime until a clean pass; the bounded
+recent-context list is supplemental. Provenance is not part of the cache key.
+The cache contains test identifiers and bounded risk counts, never test output.
 
-Unresolved test and collection failures keep their originating repository, pull request, head/base refs and SHAs, run ID/attempt, job, tox lane, and Python runtime attached per test ID. That provenance has no 12-run expiry and is removed only after a clean pass; the bounded recent-context list is supplemental. The cache schema change starts once from cold history when older cached data is present.
+Travis restores caches for pull-request builds but only stores cache changes
+from normal pushes, so a new pull-request failure may not persist to the next
+PR run. Concurrent runs sharing a stable key may also restore the same
+snapshot and the last saved snapshot can omit updates from another run. A
+missing, stale, unreadable, malformed, oversized, or incompatible cache starts
+with the broad candidate set, and execution still stops at the first failure.
+History is best-effort, not durable state. PR, base SHA, or run-attempt fields
+may be empty when Travis does not provide them. See
+https://docs.travis-ci.com/user/caching/ for cache write rules.
 
 The runner requires one Django test process and rejects parallel test
-execution. The current Travis matrix runs separate tox environments, so a
-failure stops tests in its own job; Travis does not cancel other already
-running matrix jobs when one job fails.
+execution. The ordered singleton Travis stages provide build-wide fail-fast:
+Travis cancels later stages after a failed stage, while normal cleanup for the
+failing job still runs. The former non-blocking Django-master rows are now
+required stages so their test failures also stop the build.
 
 Focused adapter checks can be run with:
 
