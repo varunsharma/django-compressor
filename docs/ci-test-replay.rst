@@ -34,6 +34,8 @@ execution. The ordered singleton Travis stages provide build-wide fail-fast:
 Travis cancels later stages after a failed stage, while normal cleanup for the
 failing job still runs. The former non-blocking Django-master rows are now
 required stages so their test failures also stop the build.
+The one-element Python matrix is intentional: Travis uses the explicit
+``jobs.include`` rows as the complete matrix and does not add a default job.
 
 Focused adapter checks can be run with:
 
